@@ -128,15 +128,17 @@ function GraphCanvasInner({ graphNodes, graphEdges }: GraphCanvasProps) {
   };
 
   // Handle click outside to close overlay
-  useEffect(() => {
+// Handle click outside to close overlay
+useEffect(() => {
   const handleClickOutside = (event: MouseEvent) => {
-  if (
-    overlayRef.current &&
-    event.target instanceof HTMLElement &&
-    
-    !overlayRef.current.contains(event.target as unknown as globalThis.Node)
-  ) {
-    setSelectedNode(null);
+    // Check if clicking outside the overlay
+    if (
+      overlayRef.current &&
+      event.target instanceof HTMLElement &&
+      // 'as any' ya 'as unknown as globalThis.Node' use karne se TS ka confusion khatam ho jata hai
+      !overlayRef.current.contains(event.target as any)
+    ) {
+      setSelectedNode(null);
     }
   };
 
@@ -146,7 +148,7 @@ function GraphCanvasInner({ graphNodes, graphEdges }: GraphCanvasProps) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }
-  }, [selectedNode, showOverlay]);
+}, [selectedNode, showOverlay]);
 
   const overlayRows = useMemo(() => {
     if (!selectedNode) {
