@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import ReactFlow, {
   Controls,
   type Edge,
-  type Node,
+  type Node as RFNode,
   ReactFlowProvider,
   type NodeMouseHandler,
   useEdgesState,
@@ -30,7 +30,7 @@ function toTitle(value: string): string {
 function applyDagreLayout(
   graphNodes: readonly GraphNodePayload[],
   graphEdges: readonly GraphEdgePayload[],
-): { nodes: Node[]; edges: Edge[] } {
+): { nodes: RFNode[]; edges: Edge[] } {
   const g = new dagre.graphlib.Graph();
   g.setGraph({
     rankdir: "LR",
@@ -54,7 +54,7 @@ function applyDagreLayout(
 
   dagre.layout(g);
 
-  const nodes: Node[] = graphNodes.map((n) => {
+  const nodes: RFNode[] = graphNodes.map((n) => {
     const pos = g.node(n.id);
     return {
       id: n.id,
@@ -91,7 +91,7 @@ function applyDagreLayout(
 
 function GraphCanvasInner({ graphNodes, graphEdges }: GraphCanvasProps) {
   const { fitView } = useReactFlow();
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<RFNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [selectedNode, setSelectedNode] = useState<GraphNodePayload | null>(null);
   const [overlayMinimized, setOverlayMinimized] = useState(false);
@@ -130,7 +130,11 @@ function GraphCanvasInner({ graphNodes, graphEdges }: GraphCanvasProps) {
   // Handle click outside to close overlay
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (overlayRef.current && !overlayRef.current.contains(event.target as Node)) {
+      if (
+        overlayRef.current &&
+        event.target instanceof Node &&
+        !overlayRef.current.contains(event.target)
+      ) {
         setSelectedNode(null);
       }
     };
