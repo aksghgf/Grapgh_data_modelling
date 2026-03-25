@@ -127,24 +127,12 @@ function GraphCanvasInner({ graphNodes, graphEdges }: GraphCanvasProps) {
     setOverlayMinimized(false);
   };
 
-  // Handle click outside to close overlay
-// Handle click outside to close overlay
-// Handle click outside to close overlay
-// Handle click outside to close overlay
-// Handle click outside to close overlay
-// Handle click outside to close overlay
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // 1. Ref check karo
-      const el = overlayRef.current;
-      if (!el || !event.target) return;
-
-      // 2. 'any' use karke TS ki bolti band
-      // Hum direct DOM element compare kar rahe hain bina 'Node' type use kiye
-      const isOutside = !(el as any).contains(event.target as any);
-
-      if (isOutside) {
-        setSelectedNode(null);
+      if (overlayRef.current && event.target instanceof HTMLElement) {
+        if (!overlayRef.current.contains(event.target)) {
+          setSelectedNode(null);
+        }
       }
     };
 
