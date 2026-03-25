@@ -129,22 +129,22 @@ function GraphCanvasInner({ graphNodes, graphEdges }: GraphCanvasProps) {
 
   // Handle click outside to close overlay
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        overlayRef.current &&
-        event.target instanceof Node &&
-        !overlayRef.current.contains(event.target)
-      ) {
-        setSelectedNode(null);
-      }
-    };
-
-    if (selectedNode && showOverlay) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      overlayRef.current &&
+      event.target instanceof HTMLElement &&
+      !overlayRef.current.contains(event.target)
+    ) {
+      setSelectedNode(null);
     }
+  };
+
+  if (selectedNode && showOverlay) {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }
   }, [selectedNode, showOverlay]);
 
   const overlayRows = useMemo(() => {
