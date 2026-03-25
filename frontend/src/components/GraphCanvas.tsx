@@ -130,16 +130,20 @@ function GraphCanvasInner({ graphNodes, graphEdges }: GraphCanvasProps) {
   // Handle click outside to close overlay
 // Handle click outside to close overlay
 // Handle click outside to close overlay
+// Handle click outside to close overlay
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-    if (
-    overlayRef.current &&
-    event.target instanceof HTMLElement &&
-    // globalThis.Node use karne se TS ko pata chalta hai ki hum DOM Node ki baat kar rahe hain
-    !overlayRef.current.contains(event.target as unknown as globalThis.Node)
-    ) {
-    setSelectedNode(null);
-    }
+      // 1. Pehle target ko HTMLElement mein cast karo
+      const target = event.target as HTMLElement;
+
+      if (
+        overlayRef.current &&
+        target &&
+        // 2. 'as any' use karke contains ko bypass karo taaki TS collision na ho
+        !(overlayRef.current as any).contains(target)
+      ) {
+        setSelectedNode(null);
+      }
     };
 
     if (selectedNode && showOverlay) {
