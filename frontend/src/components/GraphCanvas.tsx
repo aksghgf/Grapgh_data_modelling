@@ -129,26 +129,27 @@ function GraphCanvasInner({ graphNodes, graphEdges }: GraphCanvasProps) {
 
   // Handle click outside to close overlay
 // Handle click outside to close overlay
-useEffect(() => {
-  const handleClickOutside = (event: MouseEvent) => {
-    // Check if clicking outside the overlay
-    if (
-      overlayRef.current &&
-      event.target instanceof HTMLElement &&
-      // 'as any' ya 'as unknown as globalThis.Node' use karne se TS ka confusion khatam ho jata hai
-      !overlayRef.current.contains(event.target as any)
-    ) {
-      setSelectedNode(null);
-    }
-  };
-
-  if (selectedNode && showOverlay) {
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+// Handle click outside to close overlay
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Logic: Agar click overlay ke bahar hua hai
+      if (
+        overlayRef.current && 
+        event.target instanceof HTMLElement &&
+        // 'as any' use karne se TS collision khatam ho jayega
+        !overlayRef.current.contains(event.target as any)
+      ) {
+        setSelectedNode(null);
+      }
     };
-  }
-}, [selectedNode, showOverlay]);
+
+    if (selectedNode && showOverlay) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [selectedNode, showOverlay]);
 
   const overlayRows = useMemo(() => {
     if (!selectedNode) {
