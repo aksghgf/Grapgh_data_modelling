@@ -1,5 +1,5 @@
 import cors from "cors";
-import express from "express";
+import express, { type Request, type Response } from "express";
 import { loadConfig } from "./config/env.js";
 import { QueryController } from "./controllers/queryController.js";
 import { globalErrorHandler } from "./middleware/errorHandler.js";
@@ -17,10 +17,13 @@ const queryController = new QueryController(queryService);
 
 const app = express();
 const localhostOrigin =
-  /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+  /^https?:\/\/(localhost|127\.0\.0\.1)(:\\d+)?$/;
 app.use(
   cors({
-    origin: (origin, callback) => {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
       if (!origin) {
         callback(null, true);
         return;
@@ -36,7 +39,7 @@ app.use(
 );
 app.use(express.json({ limit: "1mb" }));
 
-app.get("/health", (_req, res) => {
+app.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok" });
 });
 
