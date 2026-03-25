@@ -130,12 +130,13 @@ function GraphCanvasInner({ graphNodes, graphEdges }: GraphCanvasProps) {
   // Handle click outside to close overlay
   useEffect(() => {
   const handleClickOutside = (event: MouseEvent) => {
-    if (
-      overlayRef.current &&
-      event.target instanceof HTMLElement &&
-      !overlayRef.current.contains(event.target)
-    ) {
-      setSelectedNode(null);
+  if (
+    overlayRef.current &&
+    event.target instanceof HTMLElement &&
+    
+    !overlayRef.current.contains(event.target as unknown as globalThis.Node)
+  ) {
+    setSelectedNode(null);
     }
   };
 
