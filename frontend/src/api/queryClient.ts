@@ -1,12 +1,17 @@
 import type { QueryApiResponse } from "../types/api.js";
 
 /**
- * Production: set `VITE_API_BASE_URL` to your deployed API origin (no trailing slash), e.g.
- * `https://your-api.railway.app`. Local dev: leave unset so `/api` is proxied by Vite to the Express server.
+ * Production: set `VITE_API_BASE_URL` or `VITE_API_URL` to your API origin (no trailing slash).
+ * Local dev: leave unset so `/api` is proxied by Vite to the Express server.
  */
 function apiOrigin(): string {
-  const raw = import.meta.env.VITE_API_BASE_URL?.trim() ?? "";
-  return raw.replace(/\/$/, "");
+  const raw =
+    import.meta.env.VITE_API_BASE_URL?.trim() ||
+    import.meta.env.VITE_API_URL?.trim() ||
+    "";
+  // Strip accidental leading underscores from dashboard paste typos (`_https://...`).
+  const cleaned = raw.replace(/^_+/, "");
+  return cleaned.replace(/\/$/, "");
 }
 
 /**

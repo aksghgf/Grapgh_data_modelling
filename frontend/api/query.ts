@@ -13,12 +13,16 @@ export default async function handler(
     return;
   }
 
-  const raw = process.env.BACKEND_URL?.trim() ?? "";
-  const upstream = raw.replace(/\/$/, "");
+  const raw =
+    process.env.BACKEND_URL?.trim() ||
+    process.env.VITE_API_BASE_URL?.trim() ||
+    process.env.VITE_API_URL?.trim() ||
+    "";
+  const upstream = raw.replace(/^_+/, "").replace(/\/$/, "");
   if (!upstream) {
     res.status(503).json({
       error:
-        "Server misconfiguration: set BACKEND_URL in Vercel to your Express API origin, or build the frontend with VITE_API_BASE_URL.",
+        "Server misconfiguration: set BACKEND_URL (recommended) or VITE_API_URL / VITE_API_BASE_URL to your Express API origin (e.g. https://….onrender.com, no leading _).",
     });
     return;
   }
