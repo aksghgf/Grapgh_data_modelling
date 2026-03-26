@@ -11,17 +11,43 @@ dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 /**
  * Resolved application configuration from environment variables.
  */
-function parseCorsOrigins(raw: string | undefined): readonly string[] {
-  const list = (raw ?? "http://localhost:5173")
+function parseCommaOrigins(raw: string | undefined): string[] {
+  if (raw === undefined || raw.trim() === "") {
+    return [];
+  }
+  return raw
     .split(",")
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
-  return list.length > 0 ? list : ["http://localhost:5173"];
+}
+
+/**
+ * Allowed browser origins: `CORS_ORIGIN` and/or `FRONTEND_URL` (comma-separated).
+ * Set both on Render to include your Vercel app, e.g.
+ * `CORS_ORIGIN=https://your-app.vercel.app,http://localhost:5173`
+ */
+function mergedCorsOrigins(): readonly string[] {
+  const parts = [
+    ...parseCommaOrigins(process.env.CORS_ORIGIN),
+    ...parseCommaOrigins(process.env.FRONTEND_URL),
+  ];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const o of parts) {
+    if (!seen.has(o)) {
+      seen.add(o);
+      out.push(o);
+    }
+  }
+  if (out.length > 0) {
+    return out;
+  }
+  return ["http://localhost:5173"];
 }
 
 export interface AppConfig {
   readonly port: number;
-  /** Allowed browser origins (comma-separated in `CORS_ORIGIN`). */
+  /** Allowed browser origins (`CORS_ORIGIN` and/or `FRONTEND_URL`, comma-separated). */
   readonly corsOrigins: readonly string[];
   readonly neo4jUri: string;
   readonly neo4jUser: string;
@@ -52,7 +78,7 @@ function neo4jUsername(): string {
 export function loadConfig(): AppConfig {
   return {
     port: Number(process.env.PORT ?? "3001"),
-    corsOrigins: parseCorsOrigins(process.env.CORS_ORIGIN),
+    corsOrigins: mergedCorsOrigins(),
     neo4jUri: required("NEO4J_URI", "bolt://localhost:7687"),
     neo4jUser: neo4jUsername(),
     neo4jPassword: required("NEO4J_PASSWORD"),
