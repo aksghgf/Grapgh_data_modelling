@@ -19,23 +19,30 @@ const app = express();
 const localhostOrigin =
   /^https?:\/\/(localhost|127\.0\.0\.1)(:\\d+)?$/;
 app.use(
-  cors({
-    origin: (
-      origin: string | undefined,
-      callback: (err: Error | null, allow?: boolean) => void,
-    ) => {
-      if (!origin) {
-        callback(null, true);
-        return;
-      }
-      if (config.corsOrigins.includes(origin) || localhostOrigin.test(origin)) {
-        callback(null, true);
-        return;
-      }
-      callback(null, false);
-    },
-    credentials: true,
-  }),
+  cors(
+    config.corsAllowAllOrigins
+      ? { origin: true, credentials: true }
+      : {
+          origin: (
+            origin: string | undefined,
+            callback: (err: Error | null, allow?: boolean) => void,
+          ) => {
+            if (!origin) {
+              callback(null, true);
+              return;
+            }
+            if (
+              config.corsOrigins.includes(origin) ||
+              localhostOrigin.test(origin)
+            ) {
+              callback(null, true);
+              return;
+            }
+            callback(null, false);
+          },
+          credentials: true,
+        },
+  ),
 );
 app.use(express.json({ limit: "1mb" }));
 

@@ -25,6 +25,9 @@ function parseCommaOrigins(raw: string | undefined): string[] {
  * Allowed browser origins: `CORS_ORIGIN` and/or `FRONTEND_URL` (comma-separated).
  * Set both on Render to include your Vercel app, e.g.
  * `CORS_ORIGIN=https://your-app.vercel.app,http://localhost:5173`
+ *
+ * Vercel preview URLs change per branch; either list each origin here or set
+ * `CORS_ALLOW_ALL_ORIGINS=true` on the API (demo only — avoid in strict prod).
  */
 function mergedCorsOrigins(): readonly string[] {
   const parts = [
@@ -47,6 +50,8 @@ function mergedCorsOrigins(): readonly string[] {
 
 export interface AppConfig {
   readonly port: number;
+  /** When true, reflect any `Origin` header (fixes Vercel previews if env URLs are incomplete). */
+  readonly corsAllowAllOrigins: boolean;
   /** Allowed browser origins (`CORS_ORIGIN` and/or `FRONTEND_URL`, comma-separated). */
   readonly corsOrigins: readonly string[];
   readonly neo4jUri: string;
@@ -76,8 +81,13 @@ function neo4jUsername(): string {
  * Reads and validates environment variables used by the API.
  */
 export function loadConfig(): AppConfig {
+  const allowAll =
+    process.env.CORS_ALLOW_ALL_ORIGINS === "true" ||
+    process.env.CORS_ALLOW_ALL_ORIGINS === "1" ||
+    process.env.CORS_ORIGIN === "*";
   return {
     port: Number(process.env.PORT ?? "3001"),
+    corsAllowAllOrigins: allowAll,
     corsOrigins: mergedCorsOrigins(),
     neo4jUri: required("NEO4J_URI", "bolt://localhost:7687"),
     neo4jUser: neo4jUsername(),
