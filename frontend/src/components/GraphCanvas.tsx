@@ -129,11 +129,13 @@ function GraphCanvasInner({ graphNodes, graphEdges }: GraphCanvasProps) {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as globalThis.Node | null;
-      if (overlayRef.current && target) {
-        if (!overlayRef.current.contains(target)) {
-          setSelectedNode(null);
-        }
+      const root = overlayRef.current;
+      if (!root) {
+        return;
+      }
+      // Use composedPath() so we never reference DOM `Node` (avoids TS clash with React Flow's `Node` on CI).
+      if (!event.composedPath().includes(root)) {
+        setSelectedNode(null);
       }
     };
 
