@@ -28,7 +28,7 @@ app.use(
         callback(null, true);
         return;
       }
-      if (origin === config.corsOrigin || localhostOrigin.test(origin)) {
+      if (config.corsOrigins.includes(origin) || localhostOrigin.test(origin)) {
         callback(null, true);
         return;
       }

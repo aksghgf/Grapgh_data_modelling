@@ -1,12 +1,20 @@
 import type { QueryApiResponse } from "../types/api.js";
 
-const DEFAULT_BASE = "";
+/**
+ * Production: set `VITE_API_BASE_URL` to your deployed API origin (no trailing slash), e.g.
+ * `https://your-api.railway.app`. Local dev: leave unset so `/api` is proxied by Vite to the Express server.
+ */
+function apiOrigin(): string {
+  const raw = import.meta.env.VITE_API_BASE_URL?.trim() ?? "";
+  return raw.replace(/\/$/, "");
+}
 
 /**
  * Sends a natural-language query to the backend and returns structured graph data.
  */
 export async function postNaturalLanguageQuery(message: string): Promise<QueryApiResponse> {
-  const res = await fetch(`${DEFAULT_BASE}/api/query`, {
+  const base = apiOrigin();
+  const res = await fetch(`${base}/api/query`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),

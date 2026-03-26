@@ -11,9 +11,18 @@ dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 /**
  * Resolved application configuration from environment variables.
  */
+function parseCorsOrigins(raw: string | undefined): readonly string[] {
+  const list = (raw ?? "http://localhost:5173")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  return list.length > 0 ? list : ["http://localhost:5173"];
+}
+
 export interface AppConfig {
   readonly port: number;
-  readonly corsOrigin: string;
+  /** Allowed browser origins (comma-separated in `CORS_ORIGIN`). */
+  readonly corsOrigins: readonly string[];
   readonly neo4jUri: string;
   readonly neo4jUser: string;
   readonly neo4jPassword: string;
@@ -43,7 +52,7 @@ function neo4jUsername(): string {
 export function loadConfig(): AppConfig {
   return {
     port: Number(process.env.PORT ?? "3001"),
-    corsOrigin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
+    corsOrigins: parseCorsOrigins(process.env.CORS_ORIGIN),
     neo4jUri: required("NEO4J_URI", "bolt://localhost:7687"),
     neo4jUser: neo4jUsername(),
     neo4jPassword: required("NEO4J_PASSWORD"),
