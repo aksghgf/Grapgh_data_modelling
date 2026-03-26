@@ -129,8 +129,9 @@ function GraphCanvasInner({ graphNodes, graphEdges }: GraphCanvasProps) {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (overlayRef.current && event.target instanceof HTMLElement) {
-        if (!overlayRef.current.contains(event.target)) {
+      const target = event.target as globalThis.Node | null;
+      if (overlayRef.current && target) {
+        if (!overlayRef.current.contains(target)) {
           setSelectedNode(null);
         }
       }
