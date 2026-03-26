@@ -27,8 +27,9 @@ Use these EXACT relationship types:
 
 Cypher generation rules:
 1) For ID lookups, use the exact mapped key above.
-2) Always return full path variable named p:
-   MATCH p=(...)-[...]-(...) RETURN p
+2) Return the main traversal as a path variable named graphPath (not "p"):
+   MATCH graphPath=(...)-[...]-(...) RETURN graphPath
+   Never reuse the path variable name for a node. Product nodes MUST use another alias, e.g. (prod:Product { product: '...' }). Reusing the same name for a path and a Product node causes a Neo4j type error (Path vs Node).
 3) IDs are stored as strings. If user provides numeric-looking IDs (e.g. 740506), compare as strings:
    trim(toString(n.sales_order)) = '740506'
 4) Delivery direction is strict:
