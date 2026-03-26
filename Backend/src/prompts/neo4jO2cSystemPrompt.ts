@@ -32,8 +32,14 @@ Cypher generation rules:
    Never reuse the path variable name for a node. Product nodes MUST use another alias, e.g. (prod:Product { product: '...' }). Reusing the same name for a path and a Product node causes a Neo4j type error (Path vs Node).
 3) IDs are stored as strings. If user provides numeric-looking IDs (e.g. 740506), compare as strings:
    trim(toString(n.sales_order)) = '740506'
-4) Delivery direction is strict:
-   (d:Delivery)-[:DELIVERS]->(i:SalesOrderItem)
+4) Delivery direction is strict — and DELIVERS never touches Product:
+   Only pattern: (d:Delivery)-[:DELIVERS]->(i:SalesOrderItem)
+   There is NO relationship between Product and Delivery. Never write (prod:Product)-[:DELIVERS]-(d:Delivery) or similar; it will match nothing.
+   For "delivery status for orders / lines with product X", reuse the same line item i: match order→item→product, then match delivery→item, e.g.:
+   MATCH (so:SalesOrder)-[:HAS_ITEM]->(i:SalesOrderItem)-[:FOR_PRODUCT]->(prod:Product { product: 'SKU' })
+   MATCH (d:Delivery)-[:DELIVERS]->(i)
+   RETURN so, i, prod, d
+   Or one path including order, line, and delivery (same i): graphPath=(so:SalesOrder)-[:HAS_ITEM]->(i:SalesOrderItem)<-[:DELIVERS]-(d:Delivery) with WHERE EXISTS { MATCH (i)-[:FOR_PRODUCT]->(:Product { product: 'SKU' }) }.
 5) Cypher must be read-only only (MATCH/OPTIONAL MATCH/WITH/RETURN/UNWIND/CALL read-only).
 
 SAP field awareness:
