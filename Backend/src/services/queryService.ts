@@ -33,6 +33,7 @@ export class QueryService {
 
       let normalizedCypher = stripLeadingCypherComments(cypher);
       normalizedCypher = normalizeDeliversRelationshipDirection(normalizedCypher);
+      normalizedCypher = rewriteProductDeliversHallucination(normalizedCypher);
       if (!normalizedCypher) {
         return {
           message: GUARDRAIL_MESSAGE,
@@ -111,6 +112,19 @@ function normalizeDeliversRelationshipDirection(cypher: string): string {
     /\((\w+)\s*:\s*SalesOrderItem(\s*\{[^}]*\})?\)\s*-\s*\[\s*:DELIVERS\s*\]\s*->\s*\((\w+)\s*:\s*Delivery(\s*\{[^}]*\})?\)/gi,
     "($3:Delivery$4)-[:DELIVERS]->($1:SalesOrderItem$2)",
   );
+}
+
+/**
+ * LLMs often chain (Product)-[:DELIVERS]-(Delivery); in this graph DELIVERS is only (Delivery)->(SalesOrderItem).
+ * Rewrites that segment to go through the line item and filter product with EXISTS.
+ */
+function rewriteProductDeliversHallucination(cypher: string): string {
+  const re =
+    /\((\w+)\s*:\s*SalesOrderItem(\s*\{[^}]*\})?\)\s*-\s*\[\s*:FOR_PRODUCT\s*\]\s*->\s*\(\w+\s*:\s*Product\s*\{\s*product:\s*'([^']*)'\s*\}\)\s*-\s*\[\s*:DELIVERS[^\]]*\]\s*-\s*\((\w+)\s*:\s*Delivery(\s*\{[^}]*\})?\)/gi;
+  return cypher.replace(re, (_m, iVar, itemProps, sku, dVar, dProps) => {
+    const esc = sku.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    return `(${iVar}:SalesOrderItem${itemProps ?? ""})<-[:DELIVERS]-(${dVar}:Delivery${dProps ?? ""}) WHERE EXISTS { MATCH (${iVar})-[:FOR_PRODUCT]->(:Product { product: '${esc}' }) }`;
+  });
 }
 
 function stripLeadingCypherComments(cypher: string): string {
